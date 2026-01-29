@@ -1,0 +1,49 @@
+package server
+
+import (
+	"ecommerce-api/internal/handlers"
+
+	"github.com/gin-gonic/gin"
+)
+
+func NewRouter(
+	productHandler *handlers.ProductHandler,
+	cartHandler *handlers.CartHandler,
+	authHandler *handlers.AuthHandler,
+	authMiddleware gin.HandlerFunc,
+	orderHandler *handlers.OrderHandler,
+	paymentHandler *handlers.PaymentHandler,
+) *gin.Engine {
+	r := gin.Default()
+
+	r.POST("/register", authHandler.Register)
+	r.POST("/login", authHandler.Login)
+
+	r.GET("/products", productHandler.List)
+	r.POST("/products", productHandler.Create)
+
+	r.GET("/success", orderHandler.PaymentSuccess)
+	r.GET("/fail", orderHandler.PaymentFail)
+
+	r.POST("/webhook/yookassa", paymentHandler.HandleWebhook)
+
+	cart := r.Group("/cart")
+	cart.Use(authMiddleware)
+	{
+		cart.POST("/items", cartHandler.AddToCart)
+		cart.PUT("/items/:product_id", cartHandler.UpdateCartItem)
+		cart.DELETE("/items/:product_id", cartHandler.RemoveFromCart)
+		cart.GET("", cartHandler.GetCart)
+		cart.DELETE("", cartHandler.ClearCart)
+	}
+
+	orders := r.Group("/orders")
+	orders.Use(authMiddleware)
+	{
+		orders.POST("", orderHandler.CreateOrder)
+		orders.GET("", orderHandler.ListOrders)
+		orders.GET("/:id", orderHandler.GetOrder)
+	}
+
+	return r
+}
