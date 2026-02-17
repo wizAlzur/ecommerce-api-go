@@ -22,12 +22,17 @@ type YooKassaConfig struct {
 	WebhookURL string
 }
 
+type ApiKeyConfig struct {
+	Admin string
+}
+
 type Config struct {
 	ServerPort  string
 	DatabaseURL string
 	RedisURL    string
 	JWT         JWTConfig
 	YooKassa    YooKassaConfig
+	ApiKey      ApiKeyConfig
 }
 
 func LoadConfig() (*Config, error) {
@@ -85,6 +90,11 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("YOOKASSA_WEBHOOK_URL is required")
 	}
 
+	adminApiKey := os.Getenv("ADMIN_API_KEY")
+	if adminApiKey == "" {
+		return nil, fmt.Errorf("ADMIN_API_KEY is rquired for admin endpoints")
+	}
+
 	return &Config{
 		ServerPort:  serverPort,
 		DatabaseURL: databaseURL,
@@ -99,6 +109,9 @@ func LoadConfig() (*Config, error) {
 			SuccessURL: successURL,
 			FailURL:    failURL,
 			WebhookURL: webhookURL,
+		},
+		ApiKey: ApiKeyConfig{
+			Admin: adminApiKey,
 		},
 	}, nil
 }

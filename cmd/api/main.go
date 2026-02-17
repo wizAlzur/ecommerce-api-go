@@ -68,7 +68,7 @@ func main() {
 	authMiddleware := middlewares.Auth(authService)
 
 	// Роутер
-	router := server.NewRouter(productHandler, cartHandler, authHandler, authMiddleware, orderHandler, paymentHandler)
+	router := server.NewRouter(cfg.ApiKey, productHandler, cartHandler, authHandler, authMiddleware, orderHandler, paymentHandler)
 
 	// Сервер
 	srv := &http.Server{

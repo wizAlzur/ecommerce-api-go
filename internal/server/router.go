@@ -1,12 +1,15 @@
 package server
 
 import (
+	"ecommerce-api/internal/config"
 	"ecommerce-api/internal/handlers"
+	"ecommerce-api/internal/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
 
 func NewRouter(
+	apiKeyConfig config.ApiKeyConfig,
 	productHandler *handlers.ProductHandler,
 	cartHandler *handlers.CartHandler,
 	authHandler *handlers.AuthHandler,
@@ -19,8 +22,8 @@ func NewRouter(
 	r.POST("/register", authHandler.Register)
 	r.POST("/login", authHandler.Login)
 
+	r.POST("/products", middlewares.ApiKeyMiddleware(apiKeyConfig.Admin), productHandler.Create)
 	r.GET("/products", productHandler.List)
-	r.POST("/products", productHandler.Create)
 
 	r.GET("/success", orderHandler.PaymentSuccess)
 	r.GET("/fail", orderHandler.PaymentFail)
